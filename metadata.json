@@ -1,0 +1,6 @@
+{
+  "name": "Sanad Tounes - Solidarité & Aide aux Orphelins et Meskins en Tunisie",
+  "description": "Plateforme solidaire en Tunisie pour localiser, aider et parrainer les orphelinats, familles nécessiteuses, meskins et points de collecte à travers les 24 gouvernorats.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
