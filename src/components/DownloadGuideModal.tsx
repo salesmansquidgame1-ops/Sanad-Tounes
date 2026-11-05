@@ -32,8 +32,43 @@ export const DownloadGuideModal: React.FC<DownloadGuideModalProps> = ({
 }) => {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+  const [zipLoading, setZipLoading] = useState(false);
+  const [zipSuccess, setZipSuccess] = useState(false);
+  const [zipError, setZipError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleDownloadZip = async () => {
+    try {
+      setZipLoading(true);
+      setZipError(null);
+      const res = await fetch('/sanad-tounes-projet-complet.zip', {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Erreur réseau (${res.status})`);
+      }
+      const blob = await res.blob();
+      const zipBlob = new Blob([blob], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'sanad-tounes-mohamed-aziz.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setZipSuccess(true);
+      setTimeout(() => setZipSuccess(false), 4000);
+    } catch (err: any) {
+      console.error(err);
+      setZipError('Erreur de téléchargement. Veuillez réessayer.');
+    } finally {
+      setZipLoading(false);
+    }
+  };
 
   const handleDownloadTextFile = () => {
     let content = `========================================================================\n`;
@@ -188,27 +223,44 @@ export const DownloadGuideModal: React.FC<DownloadGuideModalProps> = ({
             </button>
 
             {/* Download Complete Source Code for GitHub */}
-            <a
-              href="/sanad-tounes-projet-complet.zip"
-              download="sanad-tounes-mohamed-aziz.zip"
-              className="p-4 bg-purple-50 hover:bg-purple-100/80 rounded-xl border border-purple-300 text-left transition-all cursor-pointer flex flex-col justify-between no-underline"
+            <button
+              onClick={handleDownloadZip}
+              disabled={zipLoading}
+              className="p-4 bg-purple-50 hover:bg-purple-100/80 rounded-xl border border-purple-300 text-left transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
                 <div className="w-8 h-8 rounded-lg bg-purple-700 text-white flex items-center justify-center mb-2">
                   <FolderArchive className="w-4 h-4" />
                 </div>
                 <h4 className="font-bold text-purple-950 text-xs sm:text-sm">
-                  Code Source (.ZIP GitHub)
+                  Code Source (.ZIP Windows & Mac)
                 </h4>
                 <p className="text-[11px] text-purple-800/80 mt-1 leading-relaxed">
-                  L'archive ZIP complète du site avec React, TypeScript, Tailwind et images.
+                  L'archive ZIP complète du projet avec React, TypeScript, Tailwind, images et README.
                 </p>
+                {zipError && (
+                  <p className="text-[10px] text-red-600 mt-1 font-semibold">{zipError}</p>
+                )}
               </div>
               <div className="mt-3 pt-2 border-t border-purple-200 flex items-center gap-1.5 font-bold text-purple-900 text-xs">
-                <Download className="w-3.5 h-3.5" />
-                <span>Télécharger le .ZIP</span>
+                {zipLoading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-purple-700 border-t-transparent rounded-full animate-spin" />
+                    <span>Préparation du ZIP...</span>
+                  </>
+                ) : zipSuccess ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-emerald-700">Téléchargé ! Valide Windows</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Télécharger le .ZIP</span>
+                  </>
+                )}
               </div>
-            </a>
+            </button>
           </div>
 
           {/* GitHub Tutorial Box for Mohamed Aziz */}
